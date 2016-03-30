@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.RectF;
+import android.support.v4.content.ContextCompat;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
@@ -51,6 +52,8 @@ public class MineSweeperView extends View {
 
     private void init(Context c) {
 
+        context = (MainActivity)c;
+
         black = new Paint();
         grey = new Paint();
         red = new Paint();
@@ -58,17 +61,15 @@ public class MineSweeperView extends View {
         blue = new Paint();
         yellow = new Paint();
 
-        black.setColor(getResources().getColor(R.color.black));
-        grey.setColor(getResources().getColor(R.color.grey));
-        red.setColor(getResources().getColor(R.color.red));
-        green.setColor(getResources().getColor(R.color.green));
-        blue.setColor(getResources().getColor(R.color.blue));
-        yellow.setColor(getResources().getColor(R.color.yellow));
+        black.setColor(ContextCompat.getColor(context, R.color.black));
+        grey.setColor(ContextCompat.getColor(context, R.color.grey));
+        red.setColor(ContextCompat.getColor(context, R.color.red));
+        green.setColor(ContextCompat.getColor(context, R.color.green));
+        blue.setColor(ContextCompat.getColor(context, R.color.blue));
+        yellow.setColor(ContextCompat.getColor(context, R.color.yellow));
 
         gameSquare = new int[10][10];
         statusSquare = new int[10][10];
-
-        context = (MainActivity)c;
 
         createGame();
 
@@ -185,8 +186,10 @@ public class MineSweeperView extends View {
                 y = (int) event.getY() / (size / 10);
 
                 if (!markingMode) {
-                    statusSquare[x][y] = -1;
-                    if (gameSquare[x][y] >= 9) isRunning = false;
+                    if (statusSquare[x][y] != 1) {
+                        statusSquare[x][y] = -1;
+                        if (gameSquare[x][y] >= 9) isRunning = false;
+                    }
                 } else {
                     if (statusSquare[x][y] == 0) {
                         statusSquare[x][y] = 1;

@@ -24,6 +24,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 mineSweeperView.resetGame();
+                modeButton.setText(R.string.marking_mode);
             }
         });
 
