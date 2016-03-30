@@ -178,6 +178,50 @@ public class MineSweeperView extends View {
         yellow.setTextSize(size / 10);
     }
 
+    private void revealVoid(int x, int y) {
+        if (gameSquare[x][y] == 0) {
+            if (x > 0) {
+                if (statusSquare[x - 1][y] == 0) {
+                    statusSquare[x - 1][y] = -1;
+                    revealVoid(x - 1, y);
+                }
+                if (y > 0 && statusSquare[x - 1][y - 1] == 0) {
+                    statusSquare[x - 1][y - 1] = -1;
+                    revealVoid(x - 1, y - 1);
+                }
+                if (y < 9 && statusSquare[x - 1][y + 1] == 0) {
+                    statusSquare[x - 1][y + 1] = -1;
+                    revealVoid(x - 1, y + 1);
+
+                }
+            }
+            if (x < 9) {
+                if (statusSquare[x + 1][y] == 0) {
+                    statusSquare[x + 1][y] = -1;
+                    revealVoid(x + 1, y);
+                }
+                if (y > 0 && statusSquare[x + 1][y
+                        - 1] == 0) {
+                    statusSquare[x + 1][y - 1] = -1;
+                    revealVoid(x + 1, y - 1);
+                }
+                if (y < 9 && statusSquare[x + 1][y + 1] == 0) {
+                    statusSquare[x + 1][y + 1] = -1;
+                    revealVoid(x + 1, y + 1);
+                }
+            }
+
+            if (y > 0 && statusSquare[x][y - 1] == 0) {
+                statusSquare[x][y - 1] = -1;
+                revealVoid(x, y - 1);
+            }
+            if (y < 9 && statusSquare[x][y + 1] == 0) {
+                statusSquare[x][y + 1] = -1;
+                revealVoid(x, y + 1);
+            }
+        }
+    }
+
     public boolean onTouchEvent(MotionEvent event) {
         int x, y;
 
@@ -188,6 +232,7 @@ public class MineSweeperView extends View {
 
                 if (!markingMode) {
                     if (statusSquare[x][y] != 1) {
+                        if (gameSquare[x][y] == 0) revealVoid(x, y);
                         statusSquare[x][y] = -1;
                         if (gameSquare[x][y] >= 9) {
                             isRunning = false;
