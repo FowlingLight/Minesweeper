@@ -3,8 +3,9 @@
 
     <string name="reset_button">Reset Game</string>
     <string name="marking_mode">Marking mode</string>
-    <string name="discovering_mode">Discovering mode</string>
-    <string name="marked_mine">Number of mines marked : 0</string>
+    <string name="uncover_mode">Uncover mode</string>
+    <string name="marked_mine_init">Number of mines marked : 0</string>
+    <string name="marked_mine">Number of mines marked</string>
     <string name="total_number_mines">Total number of mines : 20</string>
 
 </resources>

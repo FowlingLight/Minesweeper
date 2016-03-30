@@ -10,17 +10,16 @@ import android.view.View;
 
 import java.util.Random;
 
-/**
- * Created by horiot_b_to_chage on 30/03/2016 for Code and Learn
- */
 public class MineSweeperView extends View {
 
     private Paint black, grey, red, green, blue, yellow;
     private int gameSquare[][];
     private int statusSquare[][];
-    private int size;
+    private int size, nbrMinesMarked;
     private RectF rect;
     private boolean isRunning;
+    private boolean markingMode;
+    private MainActivity context;
 
     /*
     Legend gameSquare
@@ -35,29 +34,22 @@ public class MineSweeperView extends View {
      */
 
 
-    // default constructor for the class that takes in a context
     public MineSweeperView(Context c) {
         super(c);
-        init();
+        init(c);
     }
 
-    // constructor that takes in a context and also a list of attributes
-    // that were set through XML
     public MineSweeperView(Context c, AttributeSet as) {
         super(c, as);
-        init();
+        init(c);
     }
 
-    // constructor that take in a context, attribute set and also a default
-    // style in case the view is to be styled in a certian way
     public MineSweeperView(Context c, AttributeSet as, int default_style) {
         super(c, as, default_style);
-        init();
+        init(c);
     }
 
-    // refactored init method as most of this code is shared by all the
-    // constructors
-    private void init() {
+    private void init(Context c) {
 
         black = new Paint();
         grey = new Paint();
@@ -76,47 +68,21 @@ public class MineSweeperView extends View {
         gameSquare = new int[10][10];
         statusSquare = new int[10][10];
 
-        for (int x = 0; x < 10; x++) {
-            for (int y = 0; y < 10; y++) {
-                gameSquare[x][y] = 0;
-                statusSquare[x][y] = 0;
-            }
-        }
+        context = (MainActivity)c;
 
-        //placing the mines
-        int nbrMinesPlaces = 0, x, y;
-        Random random = new Random();
-        while (nbrMinesPlaces < 20) {
-            x = random.nextInt(10);
-            y = random.nextInt(10);
-
-            if (gameSquare[x][y] < 9) {
-                gameSquare[x][y] = 9;
-
-                if (x > 0) {
-                    gameSquare[x - 1][y] += 1;
-                    if (y > 0) gameSquare[x - 1][y - 1] += 1;
-                    if (y < 9) gameSquare[x - 1][y + 1] += 1;
-                }
-                if (x < 9) {
-                    gameSquare[x + 1][y] += 1;
-                    if (y > 0) gameSquare[x + 1][y - 1] += 1;
-                    if (y < 9) gameSquare[x + 1][y + 1] += 1;
-                }
-
-                if (y > 0) gameSquare[x][y - 1] += 1;
-                if (y < 9) gameSquare[x][y + 1] += 1;
-
-                nbrMinesPlaces++;
-            }
-        }
-        isRunning = true;
+        createGame();
 
         rect = new RectF();
 
     }
 
     public void resetGame() {
+        createGame();
+        context.updateNbrMarkedMines(nbrMinesMarked);
+        invalidate();
+    }
+
+    private void createGame() {
         for (int x = 0; x < 10; x++) {
             for (int y = 0; y < 10; y++) {
                 gameSquare[x][y] = 0;
@@ -124,7 +90,6 @@ public class MineSweeperView extends View {
             }
         }
 
-        //placing the mines
         int nbrMinesPlaces = 0, x, y;
         Random random = new Random();
         while (nbrMinesPlaces < 20) {
@@ -152,13 +117,11 @@ public class MineSweeperView extends View {
             }
         }
         isRunning = true;
-        invalidate();
+        markingMode = false;
+        nbrMinesMarked = 0;
     }
 
-    // public method that needs to be overridden to draw the contents of this
-    // widget
     public void onDraw(Canvas canvas) {
-        // draw the rest of the squares in green to indicate multitouch
         for (int x = 0; x < 10; x++) {
             for (int y = 0; y < 10; y++) {
                 rect.set(x * (size / 10),  y * (size / 10),
@@ -168,7 +131,10 @@ public class MineSweeperView extends View {
                     canvas.save();
                     canvas.drawRect(rect, black);
                     canvas.restore();
-
+                } else if (statusSquare[x][y] == 1) {
+                    canvas.save();
+                    canvas.drawRect(rect, yellow);
+                    canvas.restore();
                 } else {
                     canvas.save();
                     if (gameSquare[x][y] >= 9) {
@@ -191,8 +157,6 @@ public class MineSweeperView extends View {
                 }
             }
         }
-
-        // call the superclass method
         super.onDraw(canvas);
 
     }
@@ -217,23 +181,37 @@ public class MineSweeperView extends View {
 
         if (isRunning) {
             if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
-                // this indicates that the user has placed the first finger on the
-                // screen what we will do here is enable the pointer, track its location
-                // and indicate that the user is touching the screen right now
-                // we also take a copy of the pointer id as the initial pointer for this
-                // touch
                 x = (int) event.getX() / (size / 10);
                 y = (int) event.getY() / (size / 10);
 
-                statusSquare[x][y] = -1;
-
-                if (gameSquare[x][y] >= 9) isRunning = false;
+                if (!markingMode) {
+                    statusSquare[x][y] = -1;
+                    if (gameSquare[x][y] >= 9) isRunning = false;
+                } else {
+                    if (statusSquare[x][y] == 0) {
+                        statusSquare[x][y] = 1;
+                        nbrMinesMarked++;
+                    }
+                    else if (statusSquare[x][y] == 1) {
+                        statusSquare[x][y] = 0;
+                        nbrMinesMarked--;
+                    }
+                    context.updateNbrMarkedMines(nbrMinesMarked);
+                }
                 invalidate();
                 return true;
             }
         }
 
         return super.onTouchEvent(event);
+    }
+
+    public boolean isMarkingMode() {
+        return markingMode;
+    }
+
+    public void setMarkingMode(boolean markingMode) {
+        this.markingMode = markingMode;
     }
 
 }
