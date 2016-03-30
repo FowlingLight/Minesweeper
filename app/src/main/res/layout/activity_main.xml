@@ -11,27 +11,32 @@
     tools:context="com.griffith.horiot.assignment2.MainActivity">
 
     <com.griffith.horiot.assignment2.MineSweeperView
+        android:id="@+id/mine_sweeper_view"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" />
 
     <Button
+        android:id="@+id/reset_button"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Reset Game"/>
+        android:text="@string/reset_button"/>
 
     <Button
+        android:id="@+id/marking_button"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Marking Mode"/>
+        android:text="@string/marking_mode"/>
 
     <TextView
+        android:id="@+id/marked_text_view"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Marked mines : 0" />
+        android:text="@string/marked_mine" />
 
     <TextView
+        android:id="@+id/total_mines_text_view"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Total mines : 0"/>
+        android:text="@string/total_number_mines"/>
 
 </LinearLayout>

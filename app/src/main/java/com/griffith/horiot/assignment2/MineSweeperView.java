@@ -20,6 +20,7 @@ public class MineSweeperView extends View {
     private int statusSquare[][];
     private int size;
     private RectF rect;
+    private boolean isRunning;
 
     /*
     Legend gameSquare
@@ -109,9 +110,49 @@ public class MineSweeperView extends View {
                 nbrMinesPlaces++;
             }
         }
+        isRunning = true;
 
         rect = new RectF();
 
+    }
+
+    public void resetGame() {
+        for (int x = 0; x < 10; x++) {
+            for (int y = 0; y < 10; y++) {
+                gameSquare[x][y] = 0;
+                statusSquare[x][y] = 0;
+            }
+        }
+
+        //placing the mines
+        int nbrMinesPlaces = 0, x, y;
+        Random random = new Random();
+        while (nbrMinesPlaces < 20) {
+            x = random.nextInt(10);
+            y = random.nextInt(10);
+
+            if (gameSquare[x][y] < 9) {
+                gameSquare[x][y] = 9;
+
+                if (x > 0) {
+                    gameSquare[x - 1][y] += 1;
+                    if (y > 0) gameSquare[x - 1][y - 1] += 1;
+                    if (y < 9) gameSquare[x - 1][y + 1] += 1;
+                }
+                if (x < 9) {
+                    gameSquare[x + 1][y] += 1;
+                    if (y > 0) gameSquare[x + 1][y - 1] += 1;
+                    if (y < 9) gameSquare[x + 1][y + 1] += 1;
+                }
+
+                if (y > 0) gameSquare[x][y - 1] += 1;
+                if (y < 9) gameSquare[x][y + 1] += 1;
+
+                nbrMinesPlaces++;
+            }
+        }
+        isRunning = true;
+        invalidate();
     }
 
     // public method that needs to be overridden to draw the contents of this
@@ -172,22 +213,24 @@ public class MineSweeperView extends View {
     }
 
     public boolean onTouchEvent(MotionEvent event) {
-
         int x, y;
 
-        if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
-            // this indicates that the user has placed the first finger on the
-            // screen what we will do here is enable the pointer, track its location
-            // and indicate that the user is touching the screen right now
-            // we also take a copy of the pointer id as the initial pointer for this
-            // touch
-            x = (int)event.getX() / (size / 10);
-            y = (int)event.getY() / (size / 10);
+        if (isRunning) {
+            if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
+                // this indicates that the user has placed the first finger on the
+                // screen what we will do here is enable the pointer, track its location
+                // and indicate that the user is touching the screen right now
+                // we also take a copy of the pointer id as the initial pointer for this
+                // touch
+                x = (int) event.getX() / (size / 10);
+                y = (int) event.getY() / (size / 10);
 
-            statusSquare[x][y] = -1;
+                statusSquare[x][y] = -1;
 
-            invalidate();
-            return true;
+                if (gameSquare[x][y] >= 9) isRunning = false;
+                invalidate();
+                return true;
+            }
         }
 
         return super.onTouchEvent(event);
