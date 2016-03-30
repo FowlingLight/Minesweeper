@@ -135,6 +135,7 @@ public class MineSweeperView extends View {
                 } else if (statusSquare[x][y] == 1) {
                     canvas.save();
                     canvas.drawRect(rect, yellow);
+                    if (!isRunning && gameSquare[x][y] >= 9) canvas.drawText("M", x * (size / 10) + 5, (y + 1) * (size / 10) - 15, black);
                     canvas.restore();
                 } else {
                     canvas.save();
@@ -188,7 +189,14 @@ public class MineSweeperView extends View {
                 if (!markingMode) {
                     if (statusSquare[x][y] != 1) {
                         statusSquare[x][y] = -1;
-                        if (gameSquare[x][y] >= 9) isRunning = false;
+                        if (gameSquare[x][y] >= 9) {
+                            isRunning = false;
+                            for (x = 0; x < 10; x++) {
+                                for (y = 0; y < 10; y++) {
+                                    if (gameSquare[x][y] >= 9 && statusSquare[x][y] != 1) statusSquare[x][y] = -1;
+                                }
+                            }
+                        }
                     }
                 } else {
                     if (statusSquare[x][y] == 0) {
