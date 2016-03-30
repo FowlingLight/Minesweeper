@@ -4,20 +4,24 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Rect;
+import android.graphics.RectF;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
+
+import java.util.Random;
 
 /**
  * Created by horiot_b_to_chage on 30/03/2016 for Code and Learn
  */
 public class MineSweeperView extends View {
 
-    private Paint black, grey;
+    private Paint black, grey, red;
     private Rect square; // the square itself
     private int gameSquare[][];
     private int statusSquare[][];
     private int size;
+    private RectF rect;
 
     /*
     Legend gameSquare
@@ -27,9 +31,8 @@ public class MineSweeperView extends View {
 
     Legend statusSquare
     -1 = mine
-    0 = uncovered
-    1 = discovered
-    2 = marked
+    0 = void
+    1 = marked
      */
 
 
@@ -62,9 +65,11 @@ public class MineSweeperView extends View {
 
         black = new Paint();
         grey = new Paint();
+        red = new Paint();
 
         black.setColor(getResources().getColor(R.color.black));
         grey.setColor(getResources().getColor(R.color.grey));
+        red.setColor(getResources().getColor(R.color.red));
 
         gameSquare = new int[10][10];
         statusSquare = new int[10][10];
@@ -76,6 +81,21 @@ public class MineSweeperView extends View {
             }
         }
 
+        //placing the mines
+        int nbrMinesPlaces = 0, x, y;
+        Random random = new Random();
+        while (nbrMinesPlaces < 20) {
+            x = random.nextInt(10);
+            y = random.nextInt(10);
+
+            if (statusSquare[x][y] == 0) {
+                statusSquare[x][y] = -1;
+                nbrMinesPlaces++;
+            }
+        }
+
+        rect = new RectF();
+
     }
 
     // public method that needs to be overridden to draw the contents of this
@@ -84,22 +104,24 @@ public class MineSweeperView extends View {
         // draw the rest of the squares in green to indicate multitouch
         for (int x = 0; x < 10; x++) {
             for (int y = 0; y < 10; y++) {
+                rect.set(x * (size / 10),  y * (size / 10),
+                        (x + 1) * (size / 10) - 5, (y + 1) * (size / 10) - 5);
+
                 if (gameSquare[x][y] == -1) {
-                    //draw black box
                     canvas.save();
-                    canvas.drawRect(x * (size / 10), y * (size / 10),
-                            (x + 1) * (size / 10) - 5, (y + 1) * (size / 10) - 5,
-                            black);
-                    //canvas.drawRect(square, black);
+                    canvas.drawRect(rect, black);
                     canvas.restore();
 
                 } else if (gameSquare[x][y] == 0) {
-                    //draw black box
                     canvas.save();
-                    canvas.drawRect(x * (size / 10), y * (size / 10),
-                            (x + 1) * (size / 10) - 5, (y + 1) * (size / 10) - 5,
-                            grey);
-                    //canvas.drawRect(square, black);
+                    if (statusSquare[x][y] == 0) {
+                        canvas.drawRect(rect, grey);
+                    } else if (statusSquare[x][y] == -1) {
+                        black.setTextSize(size / 10);
+
+                        canvas.drawRect(rect, red);
+                        canvas.drawText("M", x * (size / 10) + 5, (y + 1) * (size / 10) - 15, black);
+                    }
                     canvas.restore();
 
                 }
@@ -115,6 +137,7 @@ public class MineSweeperView extends View {
     public void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         int width = MeasureSpec.getSize(widthMeasureSpec);
         int height = MeasureSpec.getSize(heightMeasureSpec);
+
         size = width > height ? height : width;
         setMeasuredDimension(size, size);
     }
@@ -129,23 +152,10 @@ public class MineSweeperView extends View {
             // and indicate that the user is touching the screen right now
             // we also take a copy of the pointer id as the initial pointer for this
             // touch
-            int pointer_id = event.getPointerId(event.getActionIndex());
-
             x = (int)event.getX() / (size / 10);
             y = (int)event.getY() / (size / 10);
 
             this.gameSquare[x][y] = 0;
-
-            invalidate();
-            return true;
-        } else if (event.getActionMasked() == MotionEvent.ACTION_UP) {
-            // this indicates that the user has removed the last finger from the
-            // screen and has ended all touch events. here we just disable the
-            // last touch.
-            int pointer_id = event.getPointerId(event.getActionIndex());
-
-            /*x = (int)event.getRawX() / (size / 10);
-            y = (int)event.getRawY() / (size / 10);*/
 
             invalidate();
             return true;
