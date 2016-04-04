@@ -22,6 +22,12 @@ public class MineSweeperView extends View {
     private boolean markingMode;
     private MainActivity context;
 
+    private static final int EMPTY = 0;
+    private static final int MINE = 9;
+    private static final int DISCOVERED = -1;
+    private static final int COVERED = 0;
+    private static final int MARKED = 1;
+
     /*
     Legend gameSquare
     0 = void
@@ -52,42 +58,42 @@ public class MineSweeperView extends View {
 
     private void init(Context c) {
 
-        context = (MainActivity)c;
+        this.context = (MainActivity) c;
 
-        black = new Paint();
-        grey = new Paint();
-        red = new Paint();
-        green = new Paint();
-        blue = new Paint();
-        yellow = new Paint();
+        this.black = new Paint();
+        this.grey = new Paint();
+        this.red = new Paint();
+        this.green = new Paint();
+        this.blue = new Paint();
+        this.yellow = new Paint();
 
-        black.setColor(ContextCompat.getColor(context, R.color.black));
-        grey.setColor(ContextCompat.getColor(context, R.color.grey));
-        red.setColor(ContextCompat.getColor(context, R.color.red));
-        green.setColor(ContextCompat.getColor(context, R.color.green));
-        blue.setColor(ContextCompat.getColor(context, R.color.blue));
-        yellow.setColor(ContextCompat.getColor(context, R.color.yellow));
+        this.black.setColor(ContextCompat.getColor(this.context, R.color.black));
+        this.grey.setColor(ContextCompat.getColor(this.context, R.color.grey));
+        this.red.setColor(ContextCompat.getColor(this.context, R.color.red));
+        this.green.setColor(ContextCompat.getColor(this.context, R.color.green));
+        this.blue.setColor(ContextCompat.getColor(this.context, R.color.blue));
+        this.yellow.setColor(ContextCompat.getColor(this.context, R.color.yellow));
 
-        gameSquare = new int[10][10];
-        statusSquare = new int[10][10];
+        this.gameSquare = new int[10][10];
+        this.statusSquare = new int[10][10];
 
         createGame();
 
-        rect = new RectF();
+        this.rect = new RectF();
 
     }
 
     public void resetGame() {
         createGame();
-        context.updateNbrMarkedMines(nbrMinesMarked);
+        this.context.updateNbrMarkedMines(this.nbrMinesMarked);
         invalidate();
     }
 
     private void createGame() {
         for (int x = 0; x < 10; x++) {
             for (int y = 0; y < 10; y++) {
-                gameSquare[x][y] = 0;
-                statusSquare[x][y] = 0;
+                this.gameSquare[x][y] = EMPTY;
+                this.statusSquare[x][y] = COVERED;
             }
         }
 
@@ -97,65 +103,71 @@ public class MineSweeperView extends View {
             x = random.nextInt(10);
             y = random.nextInt(10);
 
-            if (gameSquare[x][y] < 9) {
-                gameSquare[x][y] = 9;
+            if (this.gameSquare[x][y] < MINE) {
+                this.gameSquare[x][y] = MINE;
 
                 if (x > 0) {
-                    gameSquare[x - 1][y] += 1;
-                    if (y > 0) gameSquare[x - 1][y - 1] += 1;
-                    if (y < 9) gameSquare[x - 1][y + 1] += 1;
+                    this.gameSquare[x - 1][y] += 1;
+                    if (y > 0) this.gameSquare[x - 1][y - 1] += 1;
+                    if (y < 9) this.gameSquare[x - 1][y + 1] += 1;
                 }
                 if (x < 9) {
-                    gameSquare[x + 1][y] += 1;
-                    if (y > 0) gameSquare[x + 1][y - 1] += 1;
-                    if (y < 9) gameSquare[x + 1][y + 1] += 1;
+                    this.gameSquare[x + 1][y] += 1;
+                    if (y > 0) this.gameSquare[x + 1][y - 1] += 1;
+                    if (y < 9) this.gameSquare[x + 1][y + 1] += 1;
                 }
 
-                if (y > 0) gameSquare[x][y - 1] += 1;
-                if (y < 9) gameSquare[x][y + 1] += 1;
+                if (y > 0) this.gameSquare[x][y - 1] += 1;
+                if (y < 9) this.gameSquare[x][y + 1] += 1;
 
                 nbrMinesPlaces++;
             }
         }
-        isRunning = true;
-        markingMode = false;
-        nbrMinesMarked = 0;
+        this.isRunning = true;
+        this.markingMode = false;
+        this.nbrMinesMarked = 0;
     }
 
     public void onDraw(Canvas canvas) {
         for (int x = 0; x < 10; x++) {
             for (int y = 0; y < 10; y++) {
-                rect.set(x * (size / 10),  y * (size / 10),
-                        (x + 1) * (size / 10) - 5, (y + 1) * (size / 10) - 5);
+                this.rect.set(x * (this.size / 10), y * (this.size / 10),
+                        (x + 1) * (this.size / 10) - 5, (y + 1) * (this.size / 10) - 5);
 
-                if (statusSquare[x][y] == 0) {
+                if (this.statusSquare[x][y] == COVERED) {
                     canvas.save();
-                    canvas.drawRect(rect, black);
+                    canvas.drawRect(this.rect, this.black);
                     canvas.restore();
-                } else if (statusSquare[x][y] == 1) {
+                } else if (this.statusSquare[x][y] == MARKED) {
                     canvas.save();
                     canvas.drawRect(rect, yellow);
-                    if (!isRunning && gameSquare[x][y] >= 9) canvas.drawText("M", x * (size / 10) + 5, (y + 1) * (size / 10) - 15, black);
+                    if (!this.isRunning && this.gameSquare[x][y] >= 9) canvas.drawText("M",
+                            x * (this.size / 10) + 5, (y + 1) * (this.size / 10) - 15, this.black);
                     canvas.restore();
                 } else {
                     canvas.save();
-                    if (gameSquare[x][y] >= 9) {
-                        canvas.drawRect(rect, red);
-                        canvas.drawText("M", x * (size / 10) + 5, (y + 1) * (size / 10) - 15, black);
+                    if (this.gameSquare[x][y] >= MINE) {
+                        canvas.drawRect(this.rect, this.red);
+                        canvas.drawText("M", x * (this.size / 10) + 5,
+                                (y + 1) * (this.size / 10) - 15, this.black);
                     } else {
-                        canvas.drawRect(rect, grey);
-                        if (gameSquare[x][y] == 1) {
-                            canvas.drawText("1", x * (size / 10) + 5, (y + 1) * (size / 10) - 15, blue);
-                        } else if (gameSquare[x][y] == 2) {
-                            canvas.drawText("2", x * (size / 10) + 5, (y + 1) * (size / 10) - 15, green);
-                        } else if (gameSquare[x][y] == 3) {
-                            canvas.drawText("3", x * (size / 10) + 5, (y + 1) * (size / 10) - 15, yellow);
-                        } else if (gameSquare[x][y] > 3) {
-                            canvas.drawText(Integer.toString(gameSquare[x][y]), x * (size / 10) + 5, (y + 1) * (size / 10) - 15, red);
+                        canvas.drawRect(this.rect, this.grey);
+                        if (this.gameSquare[x][y] == 1) {
+                            canvas.drawText("1", x * (this.size / 10) + 5,
+                                    (y + 1) * (this.size / 10) - 15, this.blue);
+                        } else if (this.gameSquare[x][y] == 2) {
+                            canvas.drawText("2", x * (this.size / 10) + 5,
+                                    (y + 1) * (this.size / 10) - 15, this.green);
+                        } else if (this.gameSquare[x][y] == 3) {
+                            canvas.drawText("3", x * (this.size / 10) + 5,
+                                    (y + 1) * (this.size / 10) - 15, this.yellow);
+                        } else if (this.gameSquare[x][y] > 3) {
+                            canvas.drawText(Integer.toString(this.gameSquare[x][y]),
+                                    x * (this.size / 10) + 5, (y + 1) * (this.size / 10) - 15,
+                                    this.red);
                         }
                     }
                     canvas.restore();
-
                 }
             }
         }
@@ -168,56 +180,66 @@ public class MineSweeperView extends View {
         int width = MeasureSpec.getSize(widthMeasureSpec);
         int height = MeasureSpec.getSize(heightMeasureSpec);
 
-        size = width > height ? height : width;
+        this.size = width > height ? height : width;
         setMeasuredDimension(size, size);
 
-        black.setTextSize(size / 10);
-        red.setTextSize(size / 10);
-        green.setTextSize(size / 10);
-        blue.setTextSize(size / 10);
-        yellow.setTextSize(size / 10);
+        this.black.setTextSize(this.size / 10);
+        this.red.setTextSize(this.size / 10);
+        this.green.setTextSize(this.size / 10);
+        this.blue.setTextSize(this.size / 10);
+        this.yellow.setTextSize(this.size / 10);
     }
 
-    private void revealVoid(int x, int y) {
-        if (gameSquare[x][y] == 0) {
+    private void revealEmpty(int x, int y) {
+        if (this.gameSquare[x][y] == EMPTY) {
             if (x > 0) {
-                if (statusSquare[x - 1][y] == 0) {
-                    statusSquare[x - 1][y] = -1;
-                    revealVoid(x - 1, y);
+                if (this.statusSquare[x - 1][y] != DISCOVERED) {
+                    this.statusSquare[x - 1][y] = DISCOVERED;
+                    this.revealEmpty(x - 1, y);
                 }
-                if (y > 0 && statusSquare[x - 1][y - 1] == 0) {
-                    statusSquare[x - 1][y - 1] = -1;
-                    revealVoid(x - 1, y - 1);
+                if (y > 0 && this.statusSquare[x - 1][y - 1] != DISCOVERED) {
+                    this.statusSquare[x - 1][y - 1] = DISCOVERED;
+                    this.revealEmpty(x - 1, y - 1);
                 }
-                if (y < 9 && statusSquare[x - 1][y + 1] == 0) {
-                    statusSquare[x - 1][y + 1] = -1;
-                    revealVoid(x - 1, y + 1);
-
+                if (y < 9 && this.statusSquare[x - 1][y + 1] != DISCOVERED) {
+                    this.statusSquare[x - 1][y + 1] = DISCOVERED;
+                    this.revealEmpty(x - 1, y + 1);
                 }
             }
             if (x < 9) {
-                if (statusSquare[x + 1][y] == 0) {
-                    statusSquare[x + 1][y] = -1;
-                    revealVoid(x + 1, y);
+                if (this.statusSquare[x + 1][y] != DISCOVERED) {
+                    this.statusSquare[x + 1][y] = DISCOVERED;
+                    this.revealEmpty(x + 1, y);
                 }
-                if (y > 0 && statusSquare[x + 1][y
-                        - 1] == 0) {
-                    statusSquare[x + 1][y - 1] = -1;
-                    revealVoid(x + 1, y - 1);
+                if (y > 0 && this.statusSquare[x + 1][y - 1] != DISCOVERED) {
+                    this.statusSquare[x + 1][y - 1] = DISCOVERED;
+                    this.revealEmpty(x + 1, y - 1);
                 }
-                if (y < 9 && statusSquare[x + 1][y + 1] == 0) {
-                    statusSquare[x + 1][y + 1] = -1;
-                    revealVoid(x + 1, y + 1);
+                if (y < 9 && this.statusSquare[x + 1][y + 1] != DISCOVERED) {
+                    this.statusSquare[x + 1][y + 1] = DISCOVERED;
+                    this.revealEmpty(x + 1, y + 1);
                 }
             }
 
-            if (y > 0 && statusSquare[x][y - 1] == 0) {
-                statusSquare[x][y - 1] = -1;
-                revealVoid(x, y - 1);
+            if (y > 0 && this.statusSquare[x][y - 1] != DISCOVERED) {
+                this.statusSquare[x][y - 1] = DISCOVERED;
+                this.revealEmpty(x, y - 1);
             }
-            if (y < 9 && statusSquare[x][y + 1] == 0) {
-                statusSquare[x][y + 1] = -1;
-                revealVoid(x, y + 1);
+            if (y < 9 && this.statusSquare[x][y + 1] != DISCOVERED) {
+                this.statusSquare[x][y + 1] = DISCOVERED;
+                this.revealEmpty(x, y + 1);
+            }
+        }
+    }
+
+    public void recheckMarkedMines() {
+        this.nbrMinesMarked = 0;
+
+        for (int x = 0; x < 10; x++) {
+            for (int y = 0; y < 10; y++) {
+                if (this.statusSquare[x][y] == MARKED) {
+                    this.nbrMinesMarked++;
+                }
             }
         }
     }
@@ -225,34 +247,39 @@ public class MineSweeperView extends View {
     public boolean onTouchEvent(MotionEvent event) {
         int x, y;
 
-        if (isRunning) {
+        if (this.isRunning) {
             if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
                 x = (int) event.getX() / (size / 10);
                 y = (int) event.getY() / (size / 10);
 
-                if (!markingMode) {
-                    if (statusSquare[x][y] != 1) {
-                        if (gameSquare[x][y] == 0) revealVoid(x, y);
-                        statusSquare[x][y] = -1;
-                        if (gameSquare[x][y] >= 9) {
-                            isRunning = false;
+                if (!this.markingMode) {
+                    if (this.statusSquare[x][y] != MARKED) {
+                        if (this.gameSquare[x][y] == EMPTY) {
+                            this.revealEmpty(x, y);
+                            this.recheckMarkedMines();
+                            this.context.updateNbrMarkedMines(this.nbrMinesMarked);
+                        }
+                        this.statusSquare[x][y] = DISCOVERED;
+                        if (this.gameSquare[x][y] >= MINE) {
+                            this.isRunning = false;
                             for (x = 0; x < 10; x++) {
                                 for (y = 0; y < 10; y++) {
-                                    if (gameSquare[x][y] >= 9 && statusSquare[x][y] != 1) statusSquare[x][y] = -1;
+                                    if (this.gameSquare[x][y] >= MINE &&
+                                            this.statusSquare[x][y] != MARKED)
+                                        this.statusSquare[x][y] = DISCOVERED;
                                 }
                             }
                         }
                     }
                 } else {
-                    if (statusSquare[x][y] == 0) {
-                        statusSquare[x][y] = 1;
-                        nbrMinesMarked++;
+                    if (this.statusSquare[x][y] == COVERED) {
+                        this.statusSquare[x][y] = MARKED;
+                        this.nbrMinesMarked++;
+                    } else if (this.statusSquare[x][y] == MARKED) {
+                        this.statusSquare[x][y] = COVERED;
+                        this.nbrMinesMarked--;
                     }
-                    else if (statusSquare[x][y] == 1) {
-                        statusSquare[x][y] = 0;
-                        nbrMinesMarked--;
-                    }
-                    context.updateNbrMarkedMines(nbrMinesMarked);
+                    this.context.updateNbrMarkedMines(this.nbrMinesMarked);
                 }
                 invalidate();
                 return true;
@@ -263,7 +290,7 @@ public class MineSweeperView extends View {
     }
 
     public boolean isMarkingMode() {
-        return markingMode;
+        return this.markingMode;
     }
 
     public void setMarkingMode(boolean markingMode) {
